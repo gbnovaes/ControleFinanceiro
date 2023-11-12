@@ -1,7 +1,13 @@
+using Microsoft.EntityFrameworkCore;
+using SistemaFinanceiroUGB232.Data;
+
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 builder.Services.AddControllersWithViews();
+
+var connectionString = builder.Configuration.GetConnectionString("AcademicoDbConnection");
+builder.Services.AddDbContext<AcademicoContext>(options => options.UseSqlServer(connectionString));
 
 var app = builder.Build();
 
