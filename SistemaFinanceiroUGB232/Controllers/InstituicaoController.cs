@@ -61,7 +61,7 @@ namespace SistemaFinanceiroUGB232.Controllers
         }
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(long? id, [Bind("Id", "Nome", "Endereco")] Instituicao instituicao)
+        public async Task<IActionResult> Edit(long? id, [Bind("InstituicaoID", "Nome", "Endereco")] Instituicao instituicao)
         {
             if (id != instituicao.InstituicaoID)
             {
