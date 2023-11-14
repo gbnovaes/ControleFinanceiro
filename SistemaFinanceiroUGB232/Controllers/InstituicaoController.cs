@@ -1,67 +1,115 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Http.HttpResults;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.ModelBinding;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.IdentityModel.Logging;
+using SistemaFinanceiroUGB232.Data;
 using SistemaFinanceiroUGB232.Models;
 
 namespace SistemaFinanceiroUGB232.Controllers
 {
     public class InstituicaoController : Controller
     {
-        public static IList<Instituicao> instituicoes = new List<Instituicao>()
+        private readonly AcademicoContext _context;
+
+        public InstituicaoController(AcademicoContext context)
         {
-            new Instituicao()
-            {
-                InstituicaoID = 1,
-                Nome = "Hogwarts",
-                Endereco = "Escocia",
-            },
-            new Instituicao()
-            {
-                InstituicaoID = 2,
-                Nome = "Mansão X",
-                Endereco = "Nova York",
-            }
-        };
-        public IActionResult Index()
-        {
-            return View(instituicoes);
+            _context = context;
         }
+
+        public async Task<IActionResult> Index()
+        {
+            return View(await _context.Instituicoes.OrderBy(i => i.Nome).ToListAsync());
+        }
+
         public IActionResult Create()
         {
             return View();
         }
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public IActionResult Create(Instituicao instituicao)
+        public async Task<IActionResult> Create([Bind("Nome", "Endereco")] Instituicao instituicao)
         {
-            instituicao.InstituicaoID = instituicoes.Select(i => i.InstituicaoID).Max() + 1;
-            instituicoes.Add(instituicao);
-            return RedirectToAction("Index");
+            try
+            {
+                if (ModelState.IsValid)
+                {
+                    _context.Add(instituicao);
+                    await _context.SaveChangesAsync();
+                    return RedirectToAction("Index");
+                }
+            }
+            catch (DbUpdateException)
+            {
+                ModelState.AddModelError("Erro de Cadastro.", "Não foi possível cadastrar a instituição");
+                throw;
+            }
+            return View(instituicao);
         }
-        public IActionResult Edit(long id)
+        public async Task<ActionResult> Edit(long id)
         {
-            return View(instituicoes.Where(i => i.InstituicaoID == id).First());
+            if (id == null)
+            {
+                return NotFound();
+            }
+            var instituicao = await _context.Instituicoes.SingleOrDefaultAsync(i => i.InstituicaoID == id);
+            if (instituicao == null)
+            {
+                return NotFound();
+            }
+            return View(instituicao);
         }
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public IActionResult Edit(Instituicao instituicao)
+        public async Task<IActionResult> Edit(long? id, [Bind("Id", "Nome", "Endereco")] Instituicao instituicao)
         {
-            instituicoes.Remove(instituicoes.Where(i => i.InstituicaoID == instituicao.InstituicaoID).First());
-            instituicoes.Add(instituicao);
-            return RedirectToAction("Index");
+            if (id != instituicao.InstituicaoID)
+            {
+                return NotFound();
+            }
+            if (ModelState.IsValid)
+            {
+                try
+                {
+                    _context.Update(instituicao);
+                    await _context.SaveChangesAsync();
+                }
+                catch (DbUpdateConcurrencyException)
+                {
+                    if (!InstituicaoExists(instituicao.InstituicaoID))
+                    {
+                        return NotFound();
+                    }
+                    else
+                    {
+                        throw;
+                    }
+                }
+                return RedirectToAction("Index");
+            }
+            return View(instituicao);
         }
-        public IActionResult Details(long id)
-        {   
-            return View(instituicoes.Where(i => i.InstituicaoID == id).First());
-        }
-        public IActionResult Delete(long id)
+
+        bool InstituicaoExists(long? instituicaoID)
         {
-            return View(instituicoes.Where(i => i.InstituicaoID == id).First());
-        }
-        [HttpPost]
-        [ValidateAntiForgeryToken]
-        public IActionResult Delete(Instituicao instituicao) 
-        {
-            instituicoes.Remove(instituicoes.Where(i => i.InstituicaoID == instituicao.InstituicaoID).First());
-            return RedirectToAction("Index");
+            throw new NotImplementedException();
         }
     }
+
+    //    public IActionResult Details(long id)
+    //    {
+    //        return View(instituicoes.Where(i => i.InstituicaoID == id).First());
+    //    }
+    //    public IActionResult Delete(long id)
+    //    {
+    //        return View(instituicoes.Where(i => i.InstituicaoID == id).First());
+    //    }
+    //    [HttpPost]
+    //    [ValidateAntiForgeryToken]
+    //    public IActionResult Delete(Instituicao instituicao)
+    //    {
+    //        instituicoes.Remove(instituicoes.Where(i => i.InstituicaoID == instituicao.InstituicaoID).First());
+    //        return RedirectToAction("Index");
+    //    }
+    //}
 }
