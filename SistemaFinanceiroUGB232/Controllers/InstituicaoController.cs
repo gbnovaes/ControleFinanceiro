@@ -17,7 +17,7 @@ namespace SistemaFinanceiroUGB232.Controllers
             _context = context;
         }
 
-        public async Task<IActionResult> Index()
+        public async Task<ActionResult> Index()
         {
             return View(await _context.Instituicoes.OrderBy(i => i.Nome).ToListAsync());
         }
@@ -28,7 +28,7 @@ namespace SistemaFinanceiroUGB232.Controllers
         }
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create([Bind("Nome", "Endereco")] Instituicao instituicao)
+        public async Task<ActionResult> Create([Bind("Nome", "Endereco")] Instituicao instituicao)
         {
             try
             {
@@ -46,22 +46,10 @@ namespace SistemaFinanceiroUGB232.Controllers
             }
             return View(instituicao);
         }
-        public async Task<ActionResult> Edit(long id)
-        {
-            if (id == null)
-            {
-                return NotFound();
-            }
-            var instituicao = await _context.Instituicoes.SingleOrDefaultAsync(i => i.InstituicaoID == id);
-            if (instituicao == null)
-            {
-                return NotFound();
-            }
-            return View(instituicao);
-        }
+        
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(long? id, [Bind("InstituicaoID", "Nome", "Endereco")] Instituicao instituicao)
+        public async Task<ActionResult> Edit(long? id, [Bind("InstituicaoID", "Nome", "Endereco")] Instituicao instituicao)
         {
             if (id != instituicao.InstituicaoID)
             {
@@ -94,22 +82,51 @@ namespace SistemaFinanceiroUGB232.Controllers
         {
             throw new NotImplementedException();
         }
-    }
 
-    //    public IActionResult Details(long id)
-    //    {
-    //        return View(instituicoes.Where(i => i.InstituicaoID == id).First());
-    //    }
-    //    public IActionResult Delete(long id)
-    //    {
-    //        return View(instituicoes.Where(i => i.InstituicaoID == id).First());
-    //    }
-    //    [HttpPost]
-    //    [ValidateAntiForgeryToken]
-    //    public IActionResult Delete(Instituicao instituicao)
-    //    {
-    //        instituicoes.Remove(instituicoes.Where(i => i.InstituicaoID == instituicao.InstituicaoID).First());
-    //        return RedirectToAction("Index");
-    //    }
-    //}
+
+        public async Task<ActionResult> Details(long id)
+        {
+            if(id == null)
+            {
+                return NotFound();
+            }
+            var instituicao = await _context.Instituicoes.SingleOrDefaultAsync(i => i.InstituicaoID == id);
+            if (instituicao == null)
+            {
+                return NotFound();
+            }
+            return View(instituicao);
+        }
+        public async Task<ActionResult> Delete(long id)
+        {
+            if (id == null)
+            {
+                return NotFound();
+            }
+            var instituicao = await _context.Instituicoes.SingleOrDefaultAsync(i => i.InstituicaoID == id);
+            if(instituicao == null)
+            {
+                return NotFound();
+            }
+            return View(instituicao);
+        }
+        [HttpPost, ActionName("Delete")]
+        [ValidateAntiForgeryToken]
+        public async Task<ActionResult> DeleteConfirmed(long? id)
+        {
+            if (id == null)
+            {
+                return NotFound();
+            }
+            var instituicao = await _context.Instituicoes.SingleOrDefaultAsync(i => i.InstituicaoID == id);
+            if(instituicao == null)
+            {
+                return NotFound();
+            }
+            _context.Instituicoes.Remove(instituicao);
+            await _context.SaveChangesAsync();
+            return View(instituicao);
+
+        }
+    }
 }
