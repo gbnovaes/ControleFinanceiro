@@ -114,18 +114,10 @@ namespace SistemaFinanceiroUGB232.Controllers
         [ValidateAntiForgeryToken]
         public async Task<ActionResult> DeleteConfirmed(long? id)
         {
-            if (id == null)
-            {
-                return NotFound();
-            }
             var instituicao = await _context.Instituicoes.SingleOrDefaultAsync(i => i.InstituicaoID == id);
-            if(instituicao == null)
-            {
-                return NotFound();
-            }
             _context.Instituicoes.Remove(instituicao);
             await _context.SaveChangesAsync();
-            return View(instituicao);
+            return RedirectToAction("Index");
 
         }
     }
